@@ -8,6 +8,11 @@ local cellSize = 50  -- Adjust this size as needed
 local spacing = 10   -- Adjust the spacing between cells
 local buttonWidth = 100
 local buttonHeight = 40
+local isIterationLeft = true
+
+-- Declare the "Start" button and isSimulationRunning variable
+local startButton
+local isSimulationRunning
 
 -- Create a group to hold all display objects
 local sceneGroup = display.newGroup()
@@ -67,12 +72,13 @@ local gridHeight = gridSize * (cellSize + spacing) - spacing
 gridGroup.x = display.contentCenterX - gridWidth / 2
 gridGroup.y = display.contentCenterY - gridHeight / 2
 
--- Declare the "Start" button
-local startButton
-local isSimulationRunning
 
 -- Function to calculate the next generation
 local function calculateNextGeneration()
+    isIterationLeft = false
+    print(isIterationLeft)
+
+    --Contains only true, false about isAlive
     local newGrid = {}
     for row = 1, gridSize do
         newGrid[row] = {}
@@ -94,6 +100,7 @@ local function calculateNextGeneration()
                 -- Cell is alive
                 if neighbors < 2 or neighbors > 3 then
                     newGrid[row][col] = false  -- Cell dies
+                    isIterationLeft = true
                 else
                     newGrid[row][col] = true  -- Cell stays alive
                 end
@@ -101,6 +108,7 @@ local function calculateNextGeneration()
                 -- Cell is dead
                 if neighbors == 3 then
                     newGrid[row][col] = true  -- Cell becomes alive
+                    isIterationLeft = true
                 else
                     newGrid[row][col] = false  -- Cell stays dead
                 end
@@ -123,9 +131,15 @@ end
 
 -- Function to update the grid in each iteration
 local function updateGrid()
-    if isSimulationRunning then
-        calculateNextGeneration()
-        timer.performWithDelay(2000, updateGrid)  -- Adjust the delay as needed
+    if isIterationLeft then
+        if isSimulationRunning then
+            calculateNextGeneration()
+            timer.performWithDelay(2000, updateGrid)  -- Adjust the delay as needed
+        end
+    
+    else
+        startButton:setLabel("Finished")
+        print("Iteration finished")
     end
 end
 
@@ -135,23 +149,27 @@ startButton = widget.newButton({
     height = buttonHeight,
     label = "Start",
     onRelease = function()
-        if isSimulationRunning then
-            -- Stop the simulation if it's already running
-            isSimulationRunning = false
-            startButton:setLabel("Start")
-        else
-            -- Start the simulation
-            isSimulationRunning = true
-            startButton:setLabel("Stop")
-
-            -- Start the grid update loop
-            updateGrid()
-        end
-    end
+            if isSimulationRunning then
+                -- Stop the simulation if it's already running
+                isSimulationRunning = false
+                startButton:setLabel("Start")
+            else
+                -- Start the simulation
+                isSimulationRunning = true
+                startButton:setLabel("Stop")
+    
+                -- Start the grid update loop
+                updateGrid()
+            end
+    end,
+    shape = "roundedRect", -- Use a rounded rectangle shape for the button
+    cornerRadius = 10, -- Set the corner radius for rounded corners
+    fillColor = { default = {0, 1, 0.8}, over = {1, 0, 0} },
+    labelColor = { default = {0, 0, 0}, over = {0, 0, 0} }
 })
 
 startButton.x = display.contentCenterX
-startButton.y = display.contentHeight - buttonHeight / 2 - 10  -- Adjust the Y position as needed
+startButton.y = display.contentHeight - buttonHeight / 2 - 10
 
 sceneGroup:insert(startButton)
 
