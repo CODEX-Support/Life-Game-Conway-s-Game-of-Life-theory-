@@ -1,7 +1,7 @@
 <h1 align="center">Cellular Automaton Simulation in Solar2D</h1>
 
 <p align="center">
-  <img src="screenshot.png" alt="Simulation Screenshot">
+  <img src="./Images.xcassets//screenshots/scrnshot1.png" alt="Simulation Screenshot">
 </p>
 
 <p align="center">
