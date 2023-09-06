@@ -1,14 +1,20 @@
+-- main.lua
+
+
+local M = {}
+
 -- Set up display
 local display = require("display")
 local widget = require("widget")
 
 -- Constants
-local gridSize = 5
-local cellSize = 50  -- Adjust this size as needed
-local spacing = 10   -- Adjust the spacing between cells
+local gridSize = 100
+local cellSize = display.contentCenterX/(gridSize) + display.contentCenterX/(gridSize)/2  -- Adjust this size as needed
+local spacing = display.contentCenterX/(gridSize) - display.contentCenterX/(gridSize)/2   -- Adjust the spacing between cells
 local buttonWidth = 100
 local buttonHeight = 40
 local isIterationLeft = true
+local iterationCount = 0
 
 -- Declare the "Start" button and isSimulationRunning variable
 local startButton
@@ -101,8 +107,9 @@ gridGroup.y = display.contentCenterY - gridHeight / 2
 
 -- Function to calculate the next generation
 local function calculateNextGeneration()
+    print(display.contentCenterX)
+    print(display.contentCenterY)
     isIterationLeft = false
-    print(isIterationLeft)
 
     --Contains only true, false about isAlive
     local newGrid = {}
@@ -153,6 +160,25 @@ local function calculateNextGeneration()
             end
         end
     end
+
+
+    -- Print the grid as a matrix
+    if iterationCount<4 then
+        iterationCount = iterationCount + 1
+        print("Iteration :"..iterationCount)
+        for row = 1, gridSize do
+            local rowString = ""
+            for col = 1, gridSize do
+                if newGrid[row][col] then
+                    rowString = rowString .. "1 "
+                else
+                    rowString = rowString .. "0 "
+                end
+            end
+            print(rowString)
+        end
+    end
+
 end
 
 -- Function to update the grid in each iteration
@@ -432,3 +458,6 @@ end
 
 -- Add an exit event listener
 Runtime:addEventListener("system", onExit)
+
+
+return M
