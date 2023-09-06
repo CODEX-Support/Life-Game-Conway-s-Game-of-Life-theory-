@@ -143,6 +143,10 @@ local function updateGrid()
     end
 end
 
+
+
+
+
 -- Create the "Start" button
 startButton = widget.newButton({
     width = buttonWidth,
@@ -156,7 +160,7 @@ startButton = widget.newButton({
             else
                 -- Start the simulation
                 isSimulationRunning = true
-                startButton:setLabel("Stop")
+                startButton:setLabel("Pause ")
     
                 -- Start the grid update loop
                 updateGrid()
@@ -172,6 +176,78 @@ startButton.x = display.contentCenterX
 startButton.y = display.contentHeight - buttonHeight / 2 - 10
 
 sceneGroup:insert(startButton)
+
+
+
+
+
+-- Create the "Random" button
+local randomButton = widget.newButton({
+    width = buttonWidth,
+    height = buttonHeight,
+    label = "Random",
+    onRelease = function()
+        if not isSimulationRunning then
+            -- Generate and apply random cell selections
+            for row = 1, gridSize do
+                for col = 1, gridSize do
+                    local randomValue = math.random(1, 5) -- Generate a random number between 1 and 5
+                    grid[row][col].selected = randomValue == 1 -- Set the cell selection based on the random number
+                    if grid[row][col].selected then
+                        grid[row][col]:setFillColor(0, 0, 0) -- Set cell color to black for selected cells
+                    else
+                        grid[row][col]:setFillColor(1, 1, 1) -- Set cell color to white for unselected cells
+                    end
+                end
+            end
+        end
+    end,
+    shape = "roundedRect",
+    cornerRadius = 10,
+    fillColor = { default = {0.8, 0.8, 0}, over = {0.5, 0.5, 0} },
+    labelColor = { default = {0, 0, 0}, over = {0, 0, 0} }
+})
+
+randomButton.x = display.contentCenterX - buttonWidth
+randomButton.y = 5
+
+sceneGroup:insert(randomButton)
+
+
+
+
+
+-- Create the "Random" button
+local resetButton = widget.newButton({
+    width = buttonWidth,
+    height = buttonHeight,
+    label = "Reset",
+    onRelease = function()
+        if not isSimulationRunning then
+            -- Generate and apply random cell selections
+            for row = 1, gridSize do
+                for col = 1, gridSize do
+                    grid[row][col].selected = false
+                    grid[row][col]:setFillColor(1, 1, 1)
+                end
+            end
+
+            -- Reset the label of the "Start" button
+            startButton:setLabel("Start")
+            isIterationLeft = true
+        end
+    end,
+    shape = "roundedRect",
+    cornerRadius = 10,
+    fillColor = { default = {0.2, 0.6, 0.9}, over = {0.5, 0.5, 0} },
+    labelColor = { default = {0, 0, 0}, over = {0, 0, 0} }
+})
+
+resetButton.x = display.contentCenterX + buttonWidth
+resetButton.y = 5
+
+sceneGroup:insert(resetButton)
+
 
 -- Function to handle app exit or scene cleanup
 local function onExit(event)
