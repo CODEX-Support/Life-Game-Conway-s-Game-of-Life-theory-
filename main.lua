@@ -160,7 +160,7 @@ startButton = widget.newButton({
             else
                 -- Start the simulation
                 isSimulationRunning = true
-                startButton:setLabel("Pause ")
+                startButton:setLabel("Pause")
     
                 -- Start the grid update loop
                 updateGrid()
@@ -169,7 +169,7 @@ startButton = widget.newButton({
     shape = "roundedRect", -- Use a rounded rectangle shape for the button
     cornerRadius = 10, -- Set the corner radius for rounded corners
     fillColor = { default = {0, 1, 0.8}, over = {1, 0, 0} },
-    labelColor = { default = {0, 0, 0}, over = {0, 0, 0} }
+    labelColor = { default = {1, 1, 1}, over = {1, 1, 1} }
 })
 
 startButton.x = display.contentCenterX
@@ -204,8 +204,8 @@ local randomButton = widget.newButton({
     end,
     shape = "roundedRect",
     cornerRadius = 10,
-    fillColor = { default = {0.8, 0.8, 0}, over = {0.5, 0.5, 0} },
-    labelColor = { default = {0, 0, 0}, over = {0, 0, 0} }
+    fillColor = { default = {0.6, 0.8, 0.2}, over = {0.4, 0.6, 0.1} }, -- Green color
+    labelColor = { default = {1, 1, 1}, over = {1, 1, 1} }
 })
 
 randomButton.x = display.contentCenterX - buttonWidth
@@ -239,14 +239,104 @@ local resetButton = widget.newButton({
     end,
     shape = "roundedRect",
     cornerRadius = 10,
-    fillColor = { default = {0.2, 0.6, 0.9}, over = {0.5, 0.5, 0} },
-    labelColor = { default = {0, 0, 0}, over = {0, 0, 0} }
+    fillColor = { default = {1, 0.6, 0}, over = {0.8, 0.4, 0} }, -- Orange color
+    labelColor = { default = {1, 1, 1}, over = {1, 1, 1} }
 })
 
 resetButton.x = display.contentCenterX + buttonWidth
 resetButton.y = 5
 
 sceneGroup:insert(resetButton)
+
+
+
+
+
+
+
+-- Create the "Save" button
+local saveButton = widget.newButton({
+    width = buttonWidth,
+    height = buttonHeight,
+    label = "Save",
+    onRelease = function()
+        if not isSimulationRunning then
+            -- Save the current state of the grid (you need to implement this logic)
+            
+            local saveData = {}
+            for row = 1, gridSize do
+                saveData[row] = {}
+                for col = 1, gridSize do
+                    saveData[row][col] = grid[row][col].selected
+                end
+            end
+
+            -- Convert saveData to JSON and save it to a file
+            local json = require("json")
+            local saveFile = io.open(system.pathForFile("saved_state.json", system.DocumentsDirectory), "w")
+            if saveFile then
+                saveFile:write(json.encode(saveData))
+                io.close(saveFile)
+            end
+        end
+    end,
+    shape = "roundedRect",
+    cornerRadius = 10,
+    fillColor = { default = {0.2, 0.6, 0.9}, over = {0.5, 0.5, 0} }, -- Blue color
+    labelColor = { default = {1, 1, 1}, over = {1, 1, 1} }
+})
+
+saveButton.x = display.contentCenterX - buttonWidth
+saveButton.y = 55
+
+sceneGroup:insert(saveButton)
+
+
+
+
+
+
+-- Create the "Restore" button
+local restoreButton = widget.newButton({
+    width = buttonWidth,
+    height = buttonHeight,
+    label = "Restore",
+    onRelease = function()
+        if not isSimulationRunning then
+            -- Restore the saved state of the grid (you need to implement this logic)
+            
+            -- Load saved data from the file
+            local json = require("json")
+            local saveFile = io.open(system.pathForFile("saved_state.json", system.DocumentsDirectory), "r")
+            if saveFile then
+                local savedData = json.decode(saveFile:read("*a"))
+                io.close(saveFile)
+
+                -- Apply the saved state to the grid
+                for row = 1, gridSize do
+                    for col = 1, gridSize do
+                        grid[row][col].selected = savedData[row][col]
+                        if grid[row][col].selected then
+                            grid[row][col]:setFillColor(0, 0, 0) -- Set cell color to black for selected cells
+                        else
+                            grid[row][col]:setFillColor(1, 1, 1) -- Set cell color to white for unselected cells
+                        end
+                    end
+                end
+            end
+        end
+    end,
+    shape = "roundedRect",
+    cornerRadius = 10,
+    fillColor = { default = {1, 0.2, 0.4}, over = {0.5, 0.1, 0.2} }, -- Red color
+    labelColor = { default = {1, 1, 1}, over = {1, 1, 1} }
+})
+
+restoreButton.x = display.contentCenterX + buttonWidth
+restoreButton.y = 55
+
+sceneGroup:insert(restoreButton)
+
 
 
 -- Function to handle app exit or scene cleanup
