@@ -20,6 +20,32 @@ local sceneGroup = display.newGroup()
 -- Create a group to hold the grid cells
 local gridGroup = display.newGroup()
 
+
+
+
+
+
+-- Create a variable to store the iteration delay
+local iterationDelay = 2000  -- Default iteration delay in milliseconds
+
+-- Create a function to increase the iteration time
+local function increaseIterationTime()
+    iterationDelay = iterationDelay + 500  -- Increase by 500 milliseconds
+end
+
+-- Create a function to decrease the iteration time
+local function decreaseIterationTime()
+    if iterationDelay > 500 then
+        iterationDelay = iterationDelay - 500  -- Decrease by 500 milliseconds, but ensure it doesn't go below 500
+    end
+end
+
+
+
+
+
+
+
 -- Function to handle cell selection
 local function cellTapped(event)
     local cell = event.target
@@ -134,7 +160,7 @@ local function updateGrid()
     if isIterationLeft then
         if isSimulationRunning then
             calculateNextGeneration()
-            timer.performWithDelay(2000, updateGrid)  -- Adjust the delay as needed
+            timer.performWithDelay(iterationDelay, updateGrid)  -- Adjust the delay as needed
         end
     
     else
@@ -153,23 +179,27 @@ startButton = widget.newButton({
     height = buttonHeight,
     label = "Start",
     onRelease = function()
-            if isSimulationRunning then
-                -- Stop the simulation if it's already running
-                isSimulationRunning = false
-                startButton:setLabel("Start")
-            else
-                -- Start the simulation
-                isSimulationRunning = true
-                startButton:setLabel("Pause")
-    
-                -- Start the grid update loop
-                updateGrid()
-            end
+        if not isIterationLeft then
+            isIterationLeft = true
+        end
+
+        if isSimulationRunning then
+            -- Stop the simulation if it's already running
+            isSimulationRunning = false
+            startButton:setLabel("Start")
+        else
+            -- Start the simulation
+            isSimulationRunning = true
+            startButton:setLabel("Pause")
+
+            -- Start the grid update loop
+            updateGrid()
+        end
     end,
     shape = "roundedRect", -- Use a rounded rectangle shape for the button
     cornerRadius = 10, -- Set the corner radius for rounded corners
     fillColor = { default = {0, 1, 0.8}, over = {1, 0, 0} },
-    labelColor = { default = {1, 1, 1}, over = {1, 1, 1} }
+    labelColor = { default = {0, 0, 0}, over = {0, 0, 0} }
 })
 
 startButton.x = display.contentCenterX
@@ -336,6 +366,57 @@ restoreButton.x = display.contentCenterX + buttonWidth
 restoreButton.y = 55
 
 sceneGroup:insert(restoreButton)
+
+
+
+
+
+
+-- Create the "Increase Speed" button
+local increaseSpeedButton = widget.newButton({
+    width = 50,
+    height = buttonHeight,
+    label = "[-]",
+    onRelease = increaseIterationTime,
+    shape = "roundedRect",
+    cornerRadius = 10,
+    fillColor = { default = {0.2, 0.7, 0.2}, over = {0.1, 0.5, 0.1} }, -- Green color
+    labelColor = { default = {0, 0, 0}, over = {0, 0, 0} }
+})
+
+increaseSpeedButton.x = display.contentCenterX
+increaseSpeedButton.y = 0
+
+sceneGroup:insert(increaseSpeedButton)
+
+
+
+
+
+
+
+
+-- Create the "Decrease Speed" button
+local decreaseSpeedButton = widget.newButton({
+    width = 50,
+    height = buttonHeight,
+    label = "[+]",
+    onRelease = decreaseIterationTime,
+    shape = "roundedRect",
+    cornerRadius = 10,
+    fillColor = { default = {0.9, 0.2, 0.2}, over = {0.7, 0.1, 0.1} }, -- Red color
+    labelColor = { default = {0, 0, 0}, over = {0, 0, 0} }
+})
+
+decreaseSpeedButton.x = display.contentCenterX
+decreaseSpeedButton.y = 55
+
+sceneGroup:insert(decreaseSpeedButton)
+
+
+
+
+
 
 
 
