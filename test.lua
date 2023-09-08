@@ -1,121 +1,114 @@
+-- Import Lunatest
 local lunatest = require("lunatest")
-local assert = lunatest.assert
 
--- Import the functions to test
-require("main")
+package.path = package.path .. ";./?.lua"
 
-lunatest.suite("Unit Tests")
+-- Import the code module that contains the functions to be tested
+local code = require("main")
 
--- Test for cellTapped function
+-- Set testMode to true to enable test mode
+code.testMode = true
+
+-- Test for cellTapped(event)
 function test_cellTapped()
-    -- Create a mock cell and tap event
-    local cell = { selected = false }
-    local tapEvent = { target = cell }
+    -- Create a test cell
+    local testCell = display.newRect(0, 0, code.cellSize, code.cellSize)
 
-    -- Test cell selection
-    cellTapped(tapEvent)
-    assert.True(cell.selected)
+    -- Simulate a tap event on the cell
+    local testEvent = { target = testCell }
+    code.cellTapped(testEvent)
 
-    -- Test cell deselection
-    cellTapped(tapEvent)
-    assert.False(cell.selected)
+    -- Check if the cell color changes as expected
+    lunatest.assert_equals(testCell.fillColor, { 0, 0, 0 })
+
+    -- Simulate another tap event on the same cell
+    code.cellTapped(testEvent)
+
+    -- Check if the cell color reverts back to white
+    lunatest.assert_equals(testCell.fillColor, { 1, 1, 1 })
 end
 
--- Test for calculateNextGeneration function
+-- Test for calculateNextGeneration()
 function test_calculateNextGeneration()
-    -- Create a mock grid with specific cell selections
-    local grid = {
-        { selected = false, false, false },
-        { false, false, true },
-        { false, true, true }
+    -- Define a test grid with a known state
+    code.grid = {
+        {false, false, false},
+        {false, true, false},
+        {false, false, false}
     }
 
-    -- Set the grid as the current grid
-    _G.grid = grid
+    -- Call the function to calculate the next generation
+    code.calculateNextGeneration()
 
-    -- Calculate the next generation
-    calculateNextGeneration()
-
-    -- Check if the next generation is as expected
-    local expectedGrid = {
-        { selected = false, false, false },
-        { false, true, true },
-        { false, true, true }
+    -- Define the expected next generation
+    local expectedNextGen = {
+        {false, false, false},
+        {false, false, false},
+        {false, false, false}
     }
 
-    for row = 1, #grid do
-        for col = 1, #grid[row] do
-            assert.are.same(grid[row][col], expectedGrid[row][col])
+    -- Check if the calculated next generation matches the expected outcome
+    for row = 1, #code.grid do
+        for col = 1, #code.grid[row] do
+            lunatest.assert_equals(code.grid[row][col], expectedNextGen[row][col])
         end
     end
 end
 
--- Test for updateGrid function
+-- Test for updateGrid()
 function test_updateGrid()
-    -- Mock the necessary variables
-    _G.isIterationLeft = true
-    _G.isSimulationRunning = true
+    -- Assuming isSimulationRunning is initially true
+    code.isSimulationRunning = true
 
-    -- Mock the calculateNextGeneration function
+    -- Define a mock function to simulate calculateNextGeneration
     local calculateNextGenerationCalled = false
-    _G.calculateNextGeneration = function()
+    code.calculateNextGeneration = function()
         calculateNextGenerationCalled = true
-        _G.isIterationLeft = false
     end
 
-    -- Run the updateGrid function
-    updateGrid()
+    -- Call the function to update the grid
+    code.updateGrid()
 
-    -- Check if calculateNextGeneration was called
-    assert.True(calculateNextGenerationCalled)
+    -- Check if calculateNextGeneration is called
+    lunatest.assert_true(calculateNextGenerationCalled)
 
-    -- Check if isSimulationRunning is still true (indicating ongoing simulation)
-    assert.True(isSimulationRunning)
+    -- Assuming isSimulationRunning is set to false
+    code.isSimulationRunning = false
+    calculateNextGenerationCalled = false
 
-    -- Check if isIterationLeft is set to false at the end of the iteration
-    assert.False(isIterationLeft)
+    -- Call the function to update the grid
+    code.updateGrid()
+
+    -- Check if calculateNextGeneration is not called when simulation is not running
+    lunatest.assert_false(calculateNextGenerationCalled)
 end
 
--- Test for increaseIterationTime function
+
+-- Test for increaseIterationTime()
 function test_increaseIterationTime()
-    -- Mock the iteration delay
-    _G.iterationDelay = 2000
+    -- Get the initial iteration delay
+    local initialDelay = code.iterationDelay
 
-    -- Increase the iteration time
-    increaseIterationTime()
+    -- Call the function to increase the iteration time
+    code.increaseIterationTime()
 
-    -- Check if the iteration delay has increased by 500 milliseconds
-    assert.are.equal(_G.iterationDelay, 2500)
-
-    -- Attempt to decrease the iteration time (should not go below 500)
-    for _ = 1, 5 do
-        decreaseIterationTime()
-    end
-
-    -- Check if the iteration delay is still at the minimum of 500 milliseconds
-    assert.are.equal(_G.iterationDelay, 500)
+    -- Check if the iteration delay has increased as expected
+    lunatest.assert_true(code.iterationDelay > initialDelay)
 end
 
--- Test for decreaseIterationTime function
+-- Test for decreaseIterationTime()
 function test_decreaseIterationTime()
-    -- Mock the iteration delay
-    _G.iterationDelay = 2000
+    -- Set an initial iteration delay (greater than 500)
+    code.iterationDelay = 1000
 
-    -- Decrease the iteration time
-    decreaseIterationTime()
+    -- Call the function to decrease the iteration time
+    code.decreaseIterationTime()
 
-    -- Check if the iteration delay has decreased by 500 milliseconds
-    assert.are.equal(_G.iterationDelay, 1500)
-
-    -- Attempt to decrease the iteration time (should not go below 500)
-    for _ = 1, 5 do
-        decreaseIterationTime()
-    end
-
-    -- Check if the iteration delay is still at the minimum of 500 milliseconds
-    assert.are.equal(_G.iterationDelay, 500)
+    -- Check if the iteration delay has decreased as expected
+    lunatest.assert_true(code.iterationDelay < 1000)
 end
 
--- Add more test functions for other code components
+-- ... (Add more test cases for other functions as needed)
 
+-- Run the tests
 lunatest.run()

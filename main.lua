@@ -1,6 +1,3 @@
--- main.lua
-
-
 local M = {}
 
 -- Set up display
@@ -8,13 +5,27 @@ local display = require("display")
 local widget = require("widget")
 
 -- Constants
-local gridSize = 100
-local cellSize = display.contentCenterX/(gridSize) + display.contentCenterX/(gridSize)/2  -- Adjust this size as needed
-local spacing = display.contentCenterX/(gridSize) - display.contentCenterX/(gridSize)/2   -- Adjust the spacing between cells
+local gridSize = 5
+local cellSize = display.contentWidth / (gridSize)   -- Adjust this size as needed
+
+local spacing = 0   -- Adjust the spacing between cells
 local buttonWidth = 100
 local buttonHeight = 40
 local isIterationLeft = true
 local iterationCount = 0
+
+if gridSize>120 then
+    cellSize = 3
+end 
+
+local strokeWidth = 0
+if gridSize>99 then
+    strokeWidth = 0
+elseif gridSize>49 then
+    strokeWidth = 1
+else
+    strokeWidth = 2
+end
 
 -- Declare the "Start" button and isSimulationRunning variable
 local startButton
@@ -25,11 +36,6 @@ local sceneGroup = display.newGroup()
 
 -- Create a group to hold the grid cells
 local gridGroup = display.newGroup()
-
-
-
-
-
 
 -- Create a variable to store the iteration delay
 local iterationDelay = 2000  -- Default iteration delay in milliseconds
@@ -45,12 +51,6 @@ local function decreaseIterationTime()
         iterationDelay = iterationDelay - 500  -- Decrease by 500 milliseconds, but ensure it doesn't go below 500
     end
 end
-
-
-
-
-
-
 
 -- Function to handle cell selection
 local function cellTapped(event)
@@ -84,7 +84,7 @@ for row = 1, gridSize do
         cell.anchorX = 0
         cell.anchorY = 0
         cell:setFillColor(1, 1, 1)  -- White color
-        cell.strokeWidth = 2
+        cell.strokeWidth = strokeWidth
         cell:setStrokeColor(0, 0, 0)
 
         cell.selected = false  -- Custom flag to track cell selection
@@ -96,22 +96,20 @@ for row = 1, gridSize do
     end
 end
 
--- Calculate the total width and height of the grid
-local gridWidth = gridSize * (cellSize + spacing) - spacing
-local gridHeight = gridSize * (cellSize + spacing) - spacing
+
+-- Set the fixed screen width and height for gridGroup
+gridGroup.width = 320
+gridGroup.height = 320
 
 -- Position the grid group at the center of the screen
-gridGroup.x = display.contentCenterX - gridWidth / 2
-gridGroup.y = display.contentCenterY - gridHeight / 2
-
+gridGroup.x = 0
+gridGroup.y = 95
 
 -- Function to calculate the next generation
 local function calculateNextGeneration()
-    print(display.contentCenterX)
-    print(display.contentCenterY)
     isIterationLeft = false
 
-    --Contains only true, false about isAlive
+    -- Contains only true, false about isAlive
     local newGrid = {}
     for row = 1, gridSize do
         newGrid[row] = {}
@@ -161,11 +159,10 @@ local function calculateNextGeneration()
         end
     end
 
-
     -- Print the grid as a matrix
-    if iterationCount<4 then
+    if iterationCount < 4 and gridSize<21 then
         iterationCount = iterationCount + 1
-        print("Iteration :"..iterationCount)
+        print("Iteration :" .. iterationCount)
         for row = 1, gridSize do
             local rowString = ""
             for col = 1, gridSize do
@@ -178,7 +175,6 @@ local function calculateNextGeneration()
             print(rowString)
         end
     end
-
 end
 
 -- Function to update the grid in each iteration
@@ -186,18 +182,14 @@ local function updateGrid()
     if isIterationLeft then
         if isSimulationRunning then
             calculateNextGeneration()
+            print(iterationDelay)
             timer.performWithDelay(iterationDelay, updateGrid)  -- Adjust the delay as needed
         end
-    
     else
         startButton:setLabel("Finished")
         print("Iteration finished")
     end
 end
-
-
-
-
 
 -- Create the "Start" button
 startButton = widget.newButton({
@@ -233,9 +225,7 @@ startButton.y = display.contentHeight - buttonHeight / 2 - 10
 
 sceneGroup:insert(startButton)
 
-
-
-
+-- ... (Previous code remains the same)
 
 -- Create the "Random" button
 local randomButton = widget.newButton({
@@ -269,11 +259,7 @@ randomButton.y = 5
 
 sceneGroup:insert(randomButton)
 
-
-
-
-
--- Create the "Random" button
+-- Create the "Reset" button
 local resetButton = widget.newButton({
     width = buttonWidth,
     height = buttonHeight,
@@ -303,12 +289,6 @@ resetButton.x = display.contentCenterX + buttonWidth
 resetButton.y = 5
 
 sceneGroup:insert(resetButton)
-
-
-
-
-
-
 
 -- Create the "Save" button
 local saveButton = widget.newButton({
@@ -346,11 +326,6 @@ saveButton.x = display.contentCenterX - buttonWidth
 saveButton.y = 55
 
 sceneGroup:insert(saveButton)
-
-
-
-
-
 
 -- Create the "Restore" button
 local restoreButton = widget.newButton({
@@ -393,17 +368,12 @@ restoreButton.y = 55
 
 sceneGroup:insert(restoreButton)
 
-
-
-
-
-
 -- Create the "Increase Speed" button
 local increaseSpeedButton = widget.newButton({
     width = 50,
     height = buttonHeight,
-    label = "[-]",
-    onRelease = increaseIterationTime,
+    label = "[+]",
+    onRelease = decreaseIterationTime,
     shape = "roundedRect",
     cornerRadius = 10,
     fillColor = { default = {0.2, 0.7, 0.2}, over = {0.1, 0.5, 0.1} }, -- Green color
@@ -415,19 +385,12 @@ increaseSpeedButton.y = 0
 
 sceneGroup:insert(increaseSpeedButton)
 
-
-
-
-
-
-
-
 -- Create the "Decrease Speed" button
 local decreaseSpeedButton = widget.newButton({
     width = 50,
     height = buttonHeight,
-    label = "[+]",
-    onRelease = decreaseIterationTime,
+    label = "[-]",
+    onRelease = increaseIterationTime,
     shape = "roundedRect",
     cornerRadius = 10,
     fillColor = { default = {0.9, 0.2, 0.2}, over = {0.7, 0.1, 0.1} }, -- Red color
@@ -438,13 +401,6 @@ decreaseSpeedButton.x = display.contentCenterX
 decreaseSpeedButton.y = 55
 
 sceneGroup:insert(decreaseSpeedButton)
-
-
-
-
-
-
-
 
 -- Function to handle app exit or scene cleanup
 local function onExit(event)
@@ -459,5 +415,6 @@ end
 -- Add an exit event listener
 Runtime:addEventListener("system", onExit)
 
-
+-- Return the module
 return M
+
